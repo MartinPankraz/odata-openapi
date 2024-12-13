@@ -13,9 +13,6 @@
 		<li class="nav-item" role="presentation">
 			<button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">Converter</button>
 		</li>
-		<li class="nav-item" role="presentation">
-			<button class="nav-link" id="sdk-tab" data-bs-toggle="tab" data-bs-target="#sdk" type="button" role="tab" aria-controls="sdk" aria-selected="false">SDK Generator</button>
-		</li>
 	</ul>
 	<div class="tab-content" id="myTabContent">
 		<div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
@@ -42,7 +39,7 @@
 									<br/>
 								</div>
 								<button type="button" onclick="getConversion()" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseOne" data-bs-target="#collapseThree" class="btn btn-primary">Convert to OpenAPI3</button>
-								<button type="button" onclick="getJSONConversion()" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseOne" data-bs-target="#collapseThree" class="btn btn-primary">Convert to OData-v4-JSON</button>
+								<button type="button" onclick="getJSONConversion()" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseOne" data-bs-target="#collapseThree" class="btn btn-primary" disabled>Convert to OData-v4-JSON</button>
 							</div>
 						</div>
 					</div>
@@ -69,7 +66,7 @@
 									<input type="text" class="form-control" id="exampleinputbasepath1" aria-describedby="ODatabasepath" placeholder="/service-root"/>
 									<div id="ODatabasepath" class="form-text">Optionally override the base path in your definition to a custom one.</div>
 								</div>
-								<div class="mb-3">
+								<!--<div class="mb-3">
 									<div id="featureSwitches" class="form-text">OpenAPI3 Feature switches to cater for consumer connector requirements (e.g. Microsoft PowerAutomate).</div>
 									<div class="row">
 										<div class="col">
@@ -111,7 +108,7 @@
 											</div>
 										</div>
 									</div>
-								</div>
+								</div>-->
 							</div>
 						</div>
 					</div>
@@ -135,99 +132,6 @@
 									</svg>
 									Download
 								</button>
-							</div>
-						</div>
-					</div>
-				</div>
-			</form>
-		</div>
-		<div class="tab-pane fade" id="sdk" role="tabpanel" aria-labelledby="sdk-tab">
-			<form>
-				<div class="accordion" id="accordionSDK">
-					<div class="accordion-item">
-						<h2 class="accordion-header" id="headingOneSDK">
-						<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOneSDK" aria-expanded="true" aria-controls="collapseOneSDK">
-							OData Definition
-						</button>
-						</h2>
-						<div id="collapseOneSDK" class="accordion-collapse collapse show" aria-labelledby="headingOneSDK" data-bs-parent="#accordionSDK">
-							<div class="accordion-body">
-								<div class="mb-3">
-									<label for="exampleInputOData1SDK" class="form-label">Manual Input of OData Definition</label>
-									<textarea class="form-control" id="exampleInputOData1SDK" aria-describedby="ODataHelp"></textarea>
-									<div id="ODataHelp" class="form-text">We will transmit your OData definition to our API backend, but we will never store your OData Definition.</div>
-									<br/>
-								</div>
-								<div class="dropdown" id="dropdownMenuSDKLanguages" >
-									<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-									  Generate SDK
-									</button>
-									<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-									  <li><a class="dropdown-item" href="#">ruby</a></li>
-									  <li><a class="dropdown-item" href="#">csharp</a></li>
-									  <li><a class="dropdown-item" href="#">java</a></li>
-									  <li><a class="dropdown-item" href="#">go</a></li>
-									  <li><a class="dropdown-item" href="#">typescript</a></li>
-									</ul>
-								</div>
-								<a href="https://microsoft.github.io/kiota/" class="link-secondary text-decoration-none">▶️Getting started with Kiota</a>
-							</div>
-						</div>
-					</div>
-					<div class="accordion-item">
-						<h2 class="accordion-header" id="headingTwoSDK">
-						<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwoSDK" aria-expanded="false" aria-controls="collapseTwoSDK">
-							Optional Parameters
-						</button>
-						</h2>
-						<div id="collapseTwoSDK" class="accordion-collapse collapse" aria-labelledby="headingTwoSDK" data-bs-parent="#accordionSDK">
-							<div class="accordion-body">
-								<div class="mb-3">
-									<label for="examplescheme1" class="form-label">Optional scheme</label>
-									<input type="text" class="form-control" id="exampleinputscheme1SDK" aria-describedby="ODatascheme" placeholder="https"/>
-									<div id="ODataschemeSDK" class="form-text">Optionally override the scheme in your definition to a custom one.</div>
-								</div>
-								<div class="mb-3">
-									<label for="examplehost1" class="form-label">Optional Host</label>
-									<input type="text" class="form-control" id="exampleinputhost1" aria-describedby="ODatahost" placeholder="services.OData.org"/>
-									<div id="ODatahostSDK" class="form-text">Optionally override the host in your definition to a custom one.</div>
-								</div>
-								<div class="mb-3">
-									<label for="examplebasepath1" class="form-label">Optional basepath</label>
-									<input type="text" class="form-control" id="exampleinputbasepath1SDK" aria-describedby="ODatabasepath" placeholder="/service-root"/>
-									<div id="ODatabasepathSDK" class="form-text">Optionally override the base path in your definition to a custom one.</div>
-								</div>
-								<div class="mb-3">
-									<div id="featureSwitches" class="form-text">Feature switches to cater for consumer connector requirements (e.g. Microsoft PowerAutomate).</div>
-									<div class="row">
-										<div class="col">
-											<div class="form-check form-switch">
-												<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchSwaggerSDK">
-												<label class="form-check-label" for="flexSwitchCheckDefault">Override swagger version 3 with 2.</label>
-											</div>
-											<div class="form-check form-switch">
-												<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchIfMatchSDK">
-												<label class="form-check-label" for="flexSwitchCheckDefault">Enhance if-match for Updates with ETags.</label>
-											</div>
-											<div class="form-check form-switch">
-												<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchAutoRestSDK">
-												<label class="form-check-label" for="flexSwitchCheckDefault">Pivot for <a href="https://github.com/Azure/autorest">AutoRest</a> to generate SDKs</label>
-											</div>
-											<div class="form-check form-switch">
-												<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchMetadataSDK">
-												<label class="form-check-label" for="flexSwitchCheckDefault">Add $metadata operation and root.</label>
-											</div>
-											<div class="form-check form-switch">
-												<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchAuthenticationSDK">
-												<label class="form-check-label" for="flexSwitchCheckDefault">Add OAuth2 Authentication.</label>
-											</div>
-											<div class="form-check form-switch">
-												<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchAADTenantSDK">
-												<input type="text" class="form-control" id="exampleinputaadSDK" aria-describedby="aad" placeholder="Add Azure AD tenant id"/>
-											</div>
-										</div>
-									</div>
-								</div>
 							</div>
 						</div>
 					</div>
@@ -269,8 +173,8 @@
 		</div>
 		<footer class="footer mt-auto py-3 bg-light">
 			<div class="container">
-			<span class="text-muted">App is based upon <a href="https://github.com/oasis-tcs/OData-openapi">OASIS OData to OpenAPI converter tools</a> and provided as is. Please have a look at our <a href="https://github.com/WillEastbury/OData-openapi">open-source project</a> for further details.</span>
-			<span class="text-muted">Post feedback and Issues on our <a href="https://github.com/WillEastbury/odata-openapi/issues/new/choose">GitHub repos.</a></span>
+			<span class="text-muted">App is based upon <a href="https://github.com/oasis-tcs/OData-openapi">OASIS OData to OpenAPI converter tools</a> and provided as is. Please have a look at our <a href="https://github.com/MartinPankraz/odata-openapi/">open-source project</a> for further details.</span>
+			<span class="text-muted">Post feedback and Issues on our <a href="https://github.com/MartinPankraz/odata-openapi/issues/new/choose">GitHub repos.</a></span>
 			</div>
 		</footer>
 	</div>
