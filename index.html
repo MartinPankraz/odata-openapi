@@ -6,6 +6,9 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>OData Transformer 🦋</title>
 		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+		<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" integrity="sha512-Qlv6VSKh1gDKGoJbnyA5RMXYcvnpIqhO++MhIM2fStMcGT9i2T//tSwYFlcyoRRDcDZ+TYHpH8azBBCyhpSeqw==" crossorigin="anonymous"></script>
 	</head>
 	<body>
 	<h1 class="display-4 ms-1">OData Transformer 🦋</h1>
@@ -139,6 +142,17 @@
 			</form>
 		</div>
 		<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+			<div id="liveCopyToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+				<div class="toast-header">
+					<strong class="me-auto">Note</strong>
+					<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+				</div>
+				<div class="toast-body">
+					Copied!
+				</div>
+			</div>
+		</div>
+		<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
 			<div id="liveDownloadToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
 				<div class="toast-header">
 					<strong class="me-auto">Note</strong>
@@ -167,7 +181,7 @@
 					<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
 				</div>
 				<div id="errorMessage" class="toast-body text-dark">
-					Oops, Something went wrong. We got notified but don't have any error insights! Please open a GitHub <a href="https://github.com/WillEastbury/odata-openapi/issues/new/choose">Issue</a> to help us.
+					Oops, Something went wrong. Please open a GitHub <a href="https://github.com/MartinPankraz/odata-openapi/issues/new/choose">Issue</a> to help us. This app collects no data.
 				</div>
 			</div>
 		</div>
@@ -178,92 +192,128 @@
 			</div>
 		</footer>
 	</div>
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-	<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js" integrity="sha512-csNcFYJniKjJxRWRV1R7fvnXrycHP6qDR21mgz1ZP55xY5d+aHLfo9/FcGDQLfn2IfngbAHd8LdfsagcCqgTcQ==" crossorigin="anonymous"></script>
-	<script>
+	<script type="text/javascript">
 
-		function getConversion()
-		{
-			var domParser = new DOMParser();
-			var XMLDocument = domParser.parseFromString(document.getElementById('exampleInputOData1').value, "text/xml");
-			var xmlRootVersionValue = XMLDocument.getElementsByTagName("edmx:Edmx")[0].getAttribute("Version");
-			var dataServicesMaxVersionValue = XMLDocument.getElementsByTagName("edmx:DataServices")[0].getAttribute("m:MaxDataServiceVersion");
-			var dataServicesVersionValue = XMLDocument.getElementsByTagName("edmx:DataServices")[0].getAttribute("m:DataServiceVersion");
-			var odataVersionValue = dataServicesVersionValue;
-			
-			var swaggerChangeEnabled = $('#flexSwitchSwagger').is(':checked');
-			var tagsEnrichEnabled = $('#flexSwitchTagsEnrich').is(':checked');
-			var flexSwitchIfMatchEnabled = $('#flexSwitchIfMatch').is(':checked');
-			var flexSwitchTruncateEnabled = $('#flexSwitchTruncate').is(':checked');
-			var flexSwitchDropMultipleOfEnabled = $('#flexSwitchDropMultipleOf').is(':checked');
-			var flexSwitchMetadata = $('#flexSwitchMetadata').is(':checked');
-			var flexSwitchDiagnostic = $('#flexSwitchDiagnostic').is(':checked');
-			var flexSwitchAuthentication = $('#flexSwitchAuthentication').is(':checked');
-			var flexSwitchAAD = $('#flexSwitchAADTenant').is(':checked');
+		const serializer = new XMLSerializer();
 
-			//target nodejs based implementation for odata version 3+
-			if(dataServicesVersionValue == null && dataServicesMaxVersionValue == null){ //must be v4
-				odataVersionValue = xmlRootVersionValue;
-			}else if( dataServicesMaxVersionValue >= "3.0"){//must be v3
-				odataVersionValue = dataServicesMaxVersionValue
-			}else if( dataServicesVersionValue >= "3.0"){//must be v3
-				odataVersionValue = dataServicesVersionValue;
-			}
-			toastOData(odataVersionValue);
-			
-			var options = {
-				method: 'POST',
-				body: document.getElementById('exampleInputOData1').value,
-				headers: {
-					'Content-Type': 'application/json',
-					'x-scheme': document.getElementById('exampleinputscheme1').value,
-					'x-basepath': document.getElementById('exampleinputbasepath1').value,
-					'x-host': document.getElementById('exampleinputhost1').value
-				}
-			}
-			//add features if enabled
-			if(swaggerChangeEnabled){
-				options.headers['x-openapi-version'] = "2.0";
-			}
-			if(tagsEnrichEnabled){
-				options.headers['x-openapi-enrich-tags'] = "" + tagsEnrichEnabled;
-			}
-			if(flexSwitchIfMatchEnabled){
-				options.headers['x-openapi-add-metadata-etags'] = "" + flexSwitchIfMatchEnabled;
-				options.headers['x-openapi-ifmatch'] = "" + flexSwitchIfMatchEnabled;
-			}
-			if(flexSwitchTruncateEnabled){
-				options.headers['x-openapi-truncate-description'] = "" + flexSwitchTruncateEnabled;
-			}
-			if(flexSwitchDropMultipleOfEnabled){
-				options.headers['x-openapi-enrich-decimals'] = "" + flexSwitchDropMultipleOfEnabled;
-			}
-			if(flexSwitchMetadata){
-				options.headers['x-openapi-addmetadataoperations'] = "" + flexSwitchMetadata;
-			}
-			if(flexSwitchDiagnostic){
-				options.headers['x-openapi-adddiagnosticoperation'] = "" + flexSwitchDiagnostic;
-			}
-			if(flexSwitchAuthentication){
-				options.headers['x-openapi-enrich-security'] = "" + flexSwitchAuthentication;
-			}
-			if(flexSwitchAAD){
-				options.headers['x-openapi-aad-tenant'] = document.getElementById('exampleinputaad').value;
-			}
+		async function transform(xslUrl, contentText, params) {
+			try {
+				const parser = new DOMParser();
+				const xsltProcessor = new XSLTProcessor();
+				
+				const xslResponse = await fetch(xslUrl);
+				const xslText = await xslResponse.text();
+				const xslStylesheet = parser.parseFromString(xslText, "application/xml");
+				xsltProcessor.importStylesheet(xslStylesheet);
 
-			fetch("https://convert.odata-openapi.net/api/ConvertOdataToOpenAPI", options)
-				.then((response) => {
-					if(response.status == 200){
-						return response.text();
+				//iterate params to set xsl parameters
+				if(params != null){
+					for (const [key, value] of Object.entries(params)) {
+						xsltProcessor.setParameter(null, key, value);
 					}
-					throw new Error('Oops, Something went wrong. Be assured we got notified.');
-				})
-				.then(res => document.getElementById('exampleoutput1').value = res)
-				.catch((error) => {
-					console.log(error);
-					toastError();
-				});
+				}
+			
+				const xmlDoc = parser.parseFromString(contentText, "application/xml");
+			
+				return xsltProcessor.transformToDocument(xmlDoc);
+			} catch(err) {
+				console.log(err);
+				toastError();
+			}
+		}
+
+		async function getConversion()
+		{
+			try {
+				var domParser = new DOMParser();
+				var XMLDocument = domParser.parseFromString(document.getElementById('exampleInputOData1').value, "text/xml");
+				var xmlRootVersionValue = XMLDocument.getElementsByTagName("edmx:Edmx")[0].getAttribute("Version");
+				var dataServicesMaxVersionValue = XMLDocument.getElementsByTagName("edmx:DataServices")[0].getAttribute("m:MaxDataServiceVersion");
+				var dataServicesVersionValue = XMLDocument.getElementsByTagName("edmx:DataServices")[0].getAttribute("m:DataServiceVersion");
+				var odataVersionValue = dataServicesVersionValue;
+				
+				var swaggerChangeEnabled = $('#flexSwitchSwagger').is(':checked');
+				var tagsEnrichEnabled = $('#flexSwitchTagsEnrich').is(':checked');
+				var flexSwitchIfMatchEnabled = $('#flexSwitchIfMatch').is(':checked');
+				var flexSwitchTruncateEnabled = $('#flexSwitchTruncate').is(':checked');
+				var flexSwitchDropMultipleOfEnabled = $('#flexSwitchDropMultipleOf').is(':checked');
+				var flexSwitchMetadata = $('#flexSwitchMetadata').is(':checked');
+				var flexSwitchDiagnostic = $('#flexSwitchDiagnostic').is(':checked');
+				var flexSwitchAuthentication = $('#flexSwitchAuthentication').is(':checked');
+				var flexSwitchAAD = $('#flexSwitchAADTenant').is(':checked');
+
+				//target nodejs based implementation for odata version 3+
+				if(dataServicesVersionValue == null && dataServicesMaxVersionValue == null){ //must be v4
+					odataVersionValue = xmlRootVersionValue;
+				}else if( dataServicesMaxVersionValue >= "3.0"){//must be v3
+					odataVersionValue = dataServicesMaxVersionValue
+				}else if( dataServicesVersionValue >= "3.0"){//must be v3
+					odataVersionValue = dataServicesVersionValue;
+				}
+				toastOData(odataVersionValue);
+				
+				//add features if enabled
+				var xslParams = [];
+				xslParams["scheme"] = document.getElementById('exampleinputscheme1').value || "https";
+				xslParams["basePath"] = document.getElementById('exampleinputbasepath1').value || "/service-root";
+				xslParams["host"] = document.getElementById('exampleinputhost1').value || "services.OData.org";
+				xslParams["odata-version"] = odataVersionValue;
+				xslParams["diagram"] = "YES";
+				xslParams["openapi-root"] = "https://raw.githubusercontent.com/oasis-tcs/odata-openapi/master/examples/";
+				xslParams["openapi-version"] = "3.0.0";
+				/*if(swaggerChangeEnabled){
+					options.headers['x-openapi-version'] = "2.0";
+				}
+				if(tagsEnrichEnabled){
+					options.headers['x-openapi-enrich-tags'] = "" + tagsEnrichEnabled;
+				}
+				if(flexSwitchIfMatchEnabled){
+					options.headers['x-openapi-add-metadata-etags'] = "" + flexSwitchIfMatchEnabled;
+					options.headers['x-openapi-ifmatch'] = "" + flexSwitchIfMatchEnabled;
+				}
+				if(flexSwitchTruncateEnabled){
+					options.headers['x-openapi-truncate-description'] = "" + flexSwitchTruncateEnabled;
+				}
+				if(flexSwitchDropMultipleOfEnabled){
+					options.headers['x-openapi-enrich-decimals'] = "" + flexSwitchDropMultipleOfEnabled;
+				}
+				if(flexSwitchMetadata){
+					options.headers['x-openapi-addmetadataoperations'] = "" + flexSwitchMetadata;
+				}
+				if(flexSwitchDiagnostic){
+					options.headers['x-openapi-adddiagnosticoperation'] = "" + flexSwitchDiagnostic;
+				}
+				if(flexSwitchAuthentication){
+					options.headers['x-openapi-enrich-security'] = "" + flexSwitchAuthentication;
+				}
+				if(flexSwitchAAD){
+					options.headers['x-openapi-aad-tenant'] = document.getElementById('exampleinputaad').value;
+				}*/
+
+				const basePath2OasisXSLToolsRelative = "/tools/";
+				//const basePath2OasisXSLToolsAbsolute = "https://raw.githubusercontent.com/oasis-tcs/odata-openapi/refs/heads/main/tools/";
+
+				//transform OData XML definition to OpenAPI definition
+				var v4OutDoc = null;
+				var v4OutString = document.getElementById('exampleInputOData1').value;
+				//if v2, transform to v4 first
+				if(odataVersionValue == "2.0"){
+					v4OutDoc = await(transform(basePath2OasisXSLToolsRelative + "V2-to-V4-CSDL.xsl", document.getElementById('exampleInputOData1').value));
+					v4OutString = serializer.serializeToString(v4OutDoc);
+				}
+				var openApiOutDoc = await(transform(basePath2OasisXSLToolsRelative + "V4-CSDL-to-OpenAPI.xsl", v4OutString,xslParams));
+				//get generated OpenAPI JSON from XML document
+				var codeContent = openApiOutDoc.childNodes[1].childNodes[3].childNodes[1].childNodes[0].textContent;
+
+				var openApiParsed = JSON.parse(codeContent);
+				var openApiFormatted = JSON.stringify(openApiParsed, null, 4);
+				document.getElementById('exampleoutput1').value = openApiFormatted;
+				console.log("Transformation completed.");
+				
+			} catch(err) {
+				console.log(err);
+				toastError();
+			}
 		}
 		/* Transform OData XML definition to JSON definition as per OData v.4 spec https://github.com/oasis-tcs/odata-json-schema/tree/main/tools */
 		function getJSONConversion()
@@ -285,7 +335,7 @@
 			}
 			toastOData(odataVersionValue);
 			
-			var options = {
+			/*var options = {
 				method: 'POST',
 				body: document.getElementById('exampleInputOData1').value,
 				headers: {
@@ -295,104 +345,7 @@
 					'x-host': document.getElementById('exampleinputhost1').value,
 					'x-odata-as-json': true
 				}
-			}
-						
-			fetch("https://convert.odata-openapi.net/api/ConvertOdataToOpenAPI", options)
-				.then((response) => {
-					if(response.status == 200){
-						return response.text();
-					}
-					throw new Error('Oops, Something went wrong. Be assured we got notified.');
-				})
-				.then(res => document.getElementById('exampleoutput1').value = res)
-				.catch((error) => {
-					console.log(error);
-					toastError();
-				});
-		}
-
-		//wait for dom tree to render bootstrap components
-		$(document).on( 'click', '#dropdownMenuSDKLanguages li', function(){
-			getSDK($(this).text());
-		});		
-
-		function getSDK(lang)
-		{
-			var domParser = new DOMParser();
-			var XMLDocument = domParser.parseFromString(document.getElementById('exampleInputOData1SDK').value, "text/xml");
-			var xmlRootVersionValue = XMLDocument.getElementsByTagName("edmx:Edmx")[0].getAttribute("Version");
-			var dataServicesMaxVersionValue = XMLDocument.getElementsByTagName("edmx:DataServices")[0].getAttribute("m:MaxDataServiceVersion");
-			var dataServicesVersionValue = XMLDocument.getElementsByTagName("edmx:DataServices")[0].getAttribute("m:DataServiceVersion");
-			var odataVersionValue = dataServicesVersionValue;
-			
-			var swaggerChangeEnabled = $('#flexSwitchSwaggerSDK').is(':checked');
-			var flexSwitchIfMatchEnabled = $('#flexSwitchIfMatchSDK').is(':checked');
-			var flexSwitchAutoRest = $('#flexSwitchAutoRestSDK').is(':checked');
-			var flexSwitchMetadata = $('#flexSwitchMetadataSDK').is(':checked');
-			var flexSwitchAuthentication = $('#flexSwitchAuthenticationSDK').is(':checked');
-			var flexSwitchAAD = $('#flexSwitchAADTenantSDK').is(':checked');
-
-			//target nodejs based implementation for odata version 3+
-			if(dataServicesVersionValue == null && dataServicesMaxVersionValue == null){ //must be v4
-				odataVersionValue = xmlRootVersionValue;
-			}else if( dataServicesMaxVersionValue >= "3.0"){//must be v3
-				odataVersionValue = dataServicesMaxVersionValue
-			}else if( dataServicesVersionValue >= "3.0"){//must be v3
-				odataVersionValue = dataServicesVersionValue;
-			}
-			toastDownload();
-			
-			var options = {
-				method: 'POST',
-				body: document.getElementById('exampleInputOData1SDK').value,
-				headers: {
-					'Content-Type': 'application/json',
-					'x-scheme': document.getElementById('exampleinputscheme1').value,
-					'x-basepath': document.getElementById('exampleinputbasepath1').value,
-					'x-host': document.getElementById('exampleinputhost1').value
-				}
-			}
-			//add features if enabled
-			if(swaggerChangeEnabled){
-				options.headers['x-openapi-version'] = "2.0";
-			}
-			if(flexSwitchIfMatchEnabled){
-				options.headers['x-openapi-add-metadata-etags'] = "" + flexSwitchIfMatchEnabled;
-				options.headers['x-openapi-ifmatch'] = "" + flexSwitchIfMatchEnabled;
-			}
-			if(flexSwitchAutoRest){
-				options.headers['x-openapi-pivot-for-autorest'] = "" + flexSwitchAutoRest;
-			}
-			if(flexSwitchMetadata){
-				options.headers['x-openapi-addmetadataoperations'] = "" + flexSwitchMetadata;
-			}
-			if(flexSwitchAuthentication){
-				options.headers['x-openapi-enrich-security'] = "" + flexSwitchAuthentication;
-			}
-			if(flexSwitchAAD){
-				options.headers['x-openapi-aad-tenant'] = document.getElementById('exampleinputaad').value;
-			}
-
-			options.headers['x-generate-sdk'] = lang;
-
-			fetch("https://convert.odata-openapi.net/api/CodeGen", options)
-				.then(function(response){
-					if(response.status == 200){
-						response.blob().then(function(myBlob) {
-							var filename = response.headers.get('content-disposition');
-							filename = filename.split(';')[1].trim().split('=')[1] + ".zip";
-							// Download the file
-							saveAs(myBlob, filename);
-						});
-					}else{
-						throw new Error('Oops, Something went wrong. Be assured we got notified.');
-					}
-				})
-				.then(res => document.getElementById('exampleoutput1').value = res)
-				.catch((error) => {
-					console.log(error);
-					toastError();
-				});
+			}*/
 		}
 
 		/*function importMetadata(){
@@ -434,7 +387,7 @@
 		}
 
 		function toast(){
-			var myAlert =document.getElementById('liveToast');//select id of toast
+			var myAlert =document.getElementById('liveCopyToast');//select id of toast
 			var bsAlert = new bootstrap.Toast(myAlert);//inizialize it
 			bsAlert.show();//show it
 		}
