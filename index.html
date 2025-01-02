@@ -9,6 +9,7 @@
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 		<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" integrity="sha512-Qlv6VSKh1gDKGoJbnyA5RMXYcvnpIqhO++MhIM2fStMcGT9i2T//tSwYFlcyoRRDcDZ+TYHpH8azBBCyhpSeqw==" crossorigin="anonymous"></script>
+		<script src="https://cdn.jsdelivr.net/npm/api-spec-converter@2.12.0/dist/api-spec-converter.min.js" crossorigin="anonymous"></script>
 	</head>
 	<body>
 	<h1 class="display-4 ms-1">OData Transformer 🦋</h1>
@@ -69,49 +70,49 @@
 									<input type="text" class="form-control" id="exampleinputbasepath1" aria-describedby="ODatabasepath" placeholder="/service-root"/>
 									<div id="ODatabasepath" class="form-text">Optionally override the base path in your definition to a custom one.</div>
 								</div>
-								<!--<div class="mb-3">
+								<div class="mb-3">
 									<div id="featureSwitches" class="form-text">OpenAPI3 Feature switches to cater for consumer connector requirements (e.g. Microsoft PowerAutomate).</div>
 									<div class="row">
 										<div class="col">
 											<div class="form-check form-switch">
-												<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchSwagger">
+												<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchSwagger" checked>
 												<label class="form-check-label" for="flexSwitchCheckDefault">Override swagger version 3 with 2.</label>
 											</div>
 											<div class="form-check form-switch">
-												<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchTruncate">
-												<label class="form-check-label" for="flexSwitchCheckDefault">Truncate API description.</label>
-											</div>
-											<div class="form-check form-switch">
-												<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchTagsEnrich">
-												<label class="form-check-label" for="flexSwitchCheckDefault">Enrich section 'tags' with description value.</label>
-											</div>
-											<div class="form-check form-switch">
-												<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchDropMultipleOf">
+												<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchDropMultipleOf" checked>
 												<label class="form-check-label" for="flexSwitchCheckDefault">Drop multipleOf property from definition</label>
 											</div>
 											<div class="form-check form-switch">
-												<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchIfMatch">
-												<label class="form-check-label" for="flexSwitchCheckDefault">Enhance if-match for Updates with ETags.</label>
+												<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchTruncate" checked>
+												<label class="form-check-label" for="flexSwitchCheckDefault">Truncate API description.</label>
 											</div>
 											<div class="form-check form-switch">
-												<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchMetadata">
-												<label class="form-check-label" for="flexSwitchCheckDefault">Add $metadata operation and root.</label>
+												<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchTagsEnrich" checked>
+												<label class="form-check-label" for="flexSwitchCheckDefault">Enrich section 'tags' with description value.</label>
 											</div>
 											<div class="form-check form-switch">
-												<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchDiagnostic">
+												<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchDiagnostic" checked>
 												<label class="form-check-label" for="flexSwitchCheckDefault">Add diagnostic endpoint for policy troubleshooting.</label>
 											</div>
 											<div class="form-check form-switch">
+												<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchMetadata" checked>
+												<label class="form-check-label" for="flexSwitchCheckDefault">Add $metadata operation and root.</label>
+											</div>
+											<div class="form-check form-switch">
+												<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchIfMatch" checked>
+												<label class="form-check-label" for="flexSwitchCheckDefault">Enhance if-match for Updates with ETags.</label>
+											</div>
+											<!--<div class="form-check form-switch">
 												<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchAuthentication">
 												<label class="form-check-label" for="flexSwitchCheckDefault">Add OAuth2 Authentication.</label>
 											</div>
 											<div class="form-check form-switch">
 												<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchAADTenant">
 												<input type="text" class="form-control" id="exampleinputaad" aria-describedby="aad" placeholder="Add Azure AD tenant id"/>
-											</div>
+											</div>-->
 										</div>
 									</div>
-								</div>-->
+								</div>
 							</div>
 						</div>
 					</div>
@@ -231,16 +232,6 @@
 				var dataServicesMaxVersionValue = XMLDocument.getElementsByTagName("edmx:DataServices")[0].getAttribute("m:MaxDataServiceVersion");
 				var dataServicesVersionValue = XMLDocument.getElementsByTagName("edmx:DataServices")[0].getAttribute("m:DataServiceVersion");
 				var odataVersionValue = dataServicesVersionValue;
-				
-				var swaggerChangeEnabled = $('#flexSwitchSwagger').is(':checked');
-				var tagsEnrichEnabled = $('#flexSwitchTagsEnrich').is(':checked');
-				var flexSwitchIfMatchEnabled = $('#flexSwitchIfMatch').is(':checked');
-				var flexSwitchTruncateEnabled = $('#flexSwitchTruncate').is(':checked');
-				var flexSwitchDropMultipleOfEnabled = $('#flexSwitchDropMultipleOf').is(':checked');
-				var flexSwitchMetadata = $('#flexSwitchMetadata').is(':checked');
-				var flexSwitchDiagnostic = $('#flexSwitchDiagnostic').is(':checked');
-				var flexSwitchAuthentication = $('#flexSwitchAuthentication').is(':checked');
-				var flexSwitchAAD = $('#flexSwitchAADTenant').is(':checked');
 
 				//target nodejs based implementation for odata version 3+
 				if(dataServicesVersionValue == null && dataServicesMaxVersionValue == null){ //must be v4
@@ -261,37 +252,9 @@
 				xslParams["diagram"] = "YES";
 				xslParams["openapi-root"] = "https://raw.githubusercontent.com/oasis-tcs/odata-openapi/master/examples/";
 				xslParams["openapi-version"] = "3.0.0";
-				/*if(swaggerChangeEnabled){
-					options.headers['x-openapi-version'] = "2.0";
-				}
-				if(tagsEnrichEnabled){
-					options.headers['x-openapi-enrich-tags'] = "" + tagsEnrichEnabled;
-				}
-				if(flexSwitchIfMatchEnabled){
-					options.headers['x-openapi-add-metadata-etags'] = "" + flexSwitchIfMatchEnabled;
-					options.headers['x-openapi-ifmatch'] = "" + flexSwitchIfMatchEnabled;
-				}
-				if(flexSwitchTruncateEnabled){
-					options.headers['x-openapi-truncate-description'] = "" + flexSwitchTruncateEnabled;
-				}
-				if(flexSwitchDropMultipleOfEnabled){
-					options.headers['x-openapi-enrich-decimals'] = "" + flexSwitchDropMultipleOfEnabled;
-				}
-				if(flexSwitchMetadata){
-					options.headers['x-openapi-addmetadataoperations'] = "" + flexSwitchMetadata;
-				}
-				if(flexSwitchDiagnostic){
-					options.headers['x-openapi-adddiagnosticoperation'] = "" + flexSwitchDiagnostic;
-				}
-				if(flexSwitchAuthentication){
-					options.headers['x-openapi-enrich-security'] = "" + flexSwitchAuthentication;
-				}
-				if(flexSwitchAAD){
-					options.headers['x-openapi-aad-tenant'] = document.getElementById('exampleinputaad').value;
-				}*/
 
-				const basePath2OasisXSLToolsRelative = "/tools/";
-				//const basePath2OasisXSLToolsAbsolute = "https://raw.githubusercontent.com/oasis-tcs/odata-openapi/refs/heads/main/tools/";
+				//const basePath2OasisXSLToolsRelative = "/tools/";
+				const basePath2OasisXSLToolsRelative = "https://raw.githubusercontent.com/oasis-tcs/odata-openapi/refs/heads/main/tools/";
 
 				//transform OData XML definition to OpenAPI definition
 				var v4OutDoc = null;
@@ -304,10 +267,12 @@
 				var openApiOutDoc = await(transform(basePath2OasisXSLToolsRelative + "V4-CSDL-to-OpenAPI.xsl", v4OutString,xslParams));
 				//get generated OpenAPI JSON from XML document
 				var codeContent = openApiOutDoc.childNodes[1].childNodes[3].childNodes[1].childNodes[0].textContent;
-
 				var openApiParsed = JSON.parse(codeContent);
-				var openApiFormatted = JSON.stringify(openApiParsed, null, 4);
-				document.getElementById('exampleoutput1').value = openApiFormatted;
+
+				//feature flag post-processing
+				var postProcessedContent = await(doFeatureFlagProcessing(openApiParsed));
+
+				document.getElementById('exampleoutput1').value = postProcessedContent;
 				console.log("Transformation completed.");
 				
 			} catch(err) {
@@ -315,7 +280,274 @@
 				toastError();
 			}
 		}
-		/* Transform OData XML definition to JSON definition as per OData v.4 spec https://github.com/oasis-tcs/odata-json-schema/tree/main/tools */
+		async function doFeatureFlagProcessing(openApiParsed){
+
+			var result = openApiParsed;
+			//get feature flag state
+			var swaggerChangeEnabled = $('#flexSwitchSwagger').is(':checked');
+			var tagsEnrichEnabled = $('#flexSwitchTagsEnrich').is(':checked');
+			var flexSwitchIfMatchEnabled = $('#flexSwitchIfMatch').is(':checked');
+			var flexSwitchTruncateEnabled = $('#flexSwitchTruncate').is(':checked');
+			var flexSwitchDropMultipleOfEnabled = $('#flexSwitchDropMultipleOf').is(':checked');
+			var flexSwitchMetadata = $('#flexSwitchMetadata').is(':checked');
+			var flexSwitchDiagnostic = $('#flexSwitchDiagnostic').is(':checked');
+			var flexSwitchAuthentication = $('#flexSwitchAuthentication').is(':checked');
+			var flexSwitchAAD = $('#flexSwitchAADTenant').is(':checked');
+
+			//Add $format parameter to all get operations
+			for (var path in openApiParsed.paths) {
+				var methods = openApiParsed.paths[path];
+				for (var method in methods) {
+					//apply for all GET methods except on $metadata
+					if(method == "get" && path != "/$metadata"){
+						methods[method].parameters = methods[method].parameters || [];
+						methods[method].parameters.push({
+							"name": "$format",
+							"in": "query",
+							"description": "The format of the response. Supported values: json, xml",
+							"required": false,
+							"schema": {
+								"type": "string"
+							}
+						});
+					}
+				}
+			}
+
+			if(flexSwitchDropMultipleOfEnabled){
+				// drop multipleOf property from definition for decimal values
+				for (var schemas in openApiParsed.components.schemas) {
+					var schema = openApiParsed.components.schemas[schemas];
+					for (var property in schema.properties) {
+						var parameters = schema.properties[property];
+						if(parameters.format && parameters.format == "decimal"){
+							//drop multipleOf property
+							delete parameters.multipleOf;
+						}
+					}
+				}
+			}
+			//make sure tags have a description
+			if(tagsEnrichEnabled){
+				for (var tags in openApiParsed.tags) {
+					var tag = openApiParsed.tags[tags];
+					tag.description = tag.description || tag.name;
+				}
+			}
+			//truncate description to a max of 1000 characters
+			if(flexSwitchTruncateEnabled){
+				openApiParsed.info.description = openApiParsed.info.description.substring(0, 1000);
+			}
+			if(flexSwitchIfMatchEnabled){
+				//add if-match to all update operations
+				for (var path in openApiParsed.paths) {
+					var methods = openApiParsed.paths[path];
+					for (var method in methods) {
+						if(method != "get" && method != "head"){
+							methods[method].parameters = methods[method].parameters || [];
+							methods[method].parameters.push({
+								"name": "If-Match",
+								"in": "header",
+								"description": "ETag value",
+								"required": true,
+								"schema": {
+									"type": "string"
+								},
+								"x-ms-visibility": "important",
+                				"x-ms-summary": "Place the eTag value for optimistic concurrency control in this header"
+							});
+						}
+					}
+				}
+			}
+			//add path diagnostic to paths
+			if(flexSwitchDiagnostic){
+				openApiParsed.paths["/diagnostic"] = {
+					"get": {
+						"summary": "Diagnostic endpoint for policy troubleshooting.",
+						"description": "This endpoint is used for troubleshooting purposes.",
+						"operationId": "getDiagnostic",
+						"responses": {
+							"200": {
+								"description": "Diagnostic endpoint for policy troubleshooting."
+							}
+						}
+					}
+				};
+			}
+			//add metadata operation
+			if(flexSwitchMetadata){
+				//add metadata operation
+				// Add root operations
+				openApiParsed.paths["/"] = {
+					"head": {
+						"summary": "The root of the API, needed for any csrf processing",
+						"operationId": "root/head",
+						"responses": {
+							"200": {
+								"description": "The root of the API, needed for any csrf processing"
+							}
+						}
+					},
+					"get": {
+						"summary": "The root of the API",
+						"operationId": "root/get",
+						"responses": {
+							"200": {
+								"description": "The root of the API"
+							}
+						}
+					}
+				};
+
+				// Add metadata operation
+				openApiParsed.paths["/$metadata"] = {
+					"get": {
+						"summary": "Metadata endpoint",
+						"operationId": "metadata/get",
+						"responses": {
+							"200": {
+								"description": "Metadata endpoint"
+							}
+						}
+					}
+				};
+			}
+
+			if(flexSwitchAuthentication){
+				var tenant = document.getElementById('exampleinputaad').value || "{tenant}";
+				// Initialize securitySchemes if it does not exist
+				openApiParsed.components.securitySchemes = openApiParsed.components.securitySchemes || {};
+				//add OAuth2 authentication
+				openApiParsed.components.securitySchemes["oAuth2ClientCredentials"] = {
+					"type": "oauth2",
+					"description": "OAuth2 authentication",
+					"flows": {
+						"clientCredentials": {//authorizationCode, implicit, password or clientCredentials
+							"authorizationUrl": "https://login.microsoftonline.com/"+tenant+"/oauth2/v2.0/authorize",
+							"tokenUrl": "https://login.microsoftonline.com/"+tenant+"/oauth2/v2.0/token",
+							"refreshUrl": "https://login.microsoftonline.com/"+tenant+"/oauth2/v2.0/token",
+							"scopes": {
+								"openid": "Retrieve User Information",
+								"profile": "Access the users profile",
+								"user_impersonation": "Access the signed in system as the user"
+							}
+						}/*,
+						"authorizationCode": {//authorizationCode, implicit, password or clientCredentials
+							"authorizationUrl": "https://login.microsoftonline.com/"+tenant+"/oauth2/v2.0/authorize",
+							"tokenUrl": "https://login.microsoftonline.com/"+tenant+"/oauth2/v2.0/token",
+							"refreshUrl": "https://login.microsoftonline.com/"+tenant+"/oauth2/v2.0/token",
+							"scopes": {
+								"userid": "Retrieve User Information",
+								"profile": "Access the users profile",
+								"user_impersonation": "Access the signed in system as the user",
+								"offline_access": "Ensure automatic refresh of token"
+							}
+						}*/
+					}
+				}
+				//Also add API Key authentication for Azure APIM
+				/*openApiParsed.components.securitySchemes["ApiKeyAuth"] = {
+					"type": "apiKey",
+					"in": "header", // can be "header", "query" or "cookie"
+					"name": "Ocp-Apim-Subscription-Key"
+				};*/
+				//Apply security to all paths
+				openApiParsed.security = [
+					{
+						"oAuth2ClientCredentials": [
+							"userid",
+							"profile",
+							"user_impersonation"
+						]
+					}/*,
+					{
+						"ApiKeyAuth": []
+					}*/
+				];
+				
+			}
+			if(swaggerChangeEnabled){
+				//downgrade to swagger 2
+				result = await(APISpecConverter.convert({
+					from: 'openapi_3',
+					to: 'swagger_2',
+					source: openApiParsed,
+				}).then(function(converted) {
+					// fix http status codes 4xx and 5xx
+					fixHttpCodes(converted);
+					// [Optional] Validate converted spec
+					return converted.validate()
+					.then(function (result) {
+						if (result.errors){
+							console.error(JSON.stringify(result.errors, null, 2));
+						}
+						if (result.warnings){
+							console.error(JSON.stringify(result.warnings, null, 2));
+						}
+						// [Optional] Fill missing fields with dummy values
+						converted.fillMissing();
+						var options = {syntax: 'json', order: 'alpha'};
+						return converted.stringify(options);
+
+					});
+				}).catch(function (err) {
+					console.error(err);
+					toastError();
+				}));
+			}else{
+				result = JSON.stringify(openApiParsed, null, 4);
+			}
+
+			return result;
+		}
+		function fixHttpCodes(converted) {
+			// Fix HTTP codes that have characters for Swagger v2, for example 4XX and 5XX. Fix to 400 and 500
+			var paths = converted.spec.paths;
+			for (var path in paths) {
+				var methods = paths[path];
+
+				for (var method in methods) {
+					//add unique operationId to each operation using path name (characters only and max 20), start with uppercase letter and drop special characters
+					if (!methods[method].operationId) {
+						methods[method].operationId = method + path.replace(/[^a-zA-Z]/g, '').substring(0, 20).charAt(0).toUpperCase() + path.replace(/[^a-zA-Z]/g, '').substring(1);
+					}
+
+					// Define path parameters if they are referenced in the path and missing
+					var pathParams = path.match(/{([^}]+)}/g);
+					if (pathParams) {
+						methods[method].parameters = methods[method].parameters || [];
+						pathParams.forEach(function(param) {
+							var paramName = param.replace(/[{}]/g, '');
+							if (!methods[method].parameters.some(p => p.name === paramName)) {
+								methods[method].parameters.push({
+									name: paramName,
+									in: 'path',
+									required: true,
+									type: 'string'
+								});
+							}
+						});
+					}
+
+					//continue with fixing http codes
+					var responses = methods[method].responses;
+					var newResponses = {};
+					for (var response in responses) {
+						if (response === "4XX") {
+							newResponses["400"] = responses[response];
+						} else if (response === "5XX") {
+							newResponses["500"] = responses[response];
+						} else {
+							newResponses[response] = responses[response];
+						}
+					}
+					methods[method].responses = newResponses;
+				}
+			}
+			return converted;
+}
+				/* Transform OData XML definition to JSON definition as per OData v.4 spec https://github.com/oasis-tcs/odata-json-schema/tree/main/tools */
 		function getJSONConversion()
 		{
 			var domParser = new DOMParser();
