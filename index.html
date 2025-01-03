@@ -7,6 +7,7 @@
 		<title>OData Transformer 🦋</title>
 		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css">
 		<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" integrity="sha512-Qlv6VSKh1gDKGoJbnyA5RMXYcvnpIqhO++MhIM2fStMcGT9i2T//tSwYFlcyoRRDcDZ+TYHpH8azBBCyhpSeqw==" crossorigin="anonymous"></script>
 		<script src="https://cdn.jsdelivr.net/npm/api-spec-converter@2.12.0/dist/api-spec-converter.min.js" crossorigin="anonymous"></script>
@@ -28,22 +29,22 @@
 							OData Definition
 						</button>
 						</h2>
-						<div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+						<div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne">
 							<div class="accordion-body">
 								<div class="mb-3">
-									<!--<label for="basic-url" class="form-label">Link to metadata xml</label>
+									<label for="basic-url" class="form-label">Link to metadata xml</label>
 									<div class="input-group mb-3">
 										<span class="input-group-text" id="basic-addon3">https://</span>
 										<input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3" placeholder="services.odata.org/v2/northwind/northwind.svc/$metadata">
-										<button type="button" onclick="importMetadata()" class="btn btn-dark">Import</button>	
-									</div>-->
+										<button type="button" onclick="importMetadata()" class="btn btn-dark">📥Import</button>	
+									</div>
 									<label for="exampleInputOData1" class="form-label">Manual Input of OData Definition (XML)</label>
 									<textarea class="form-control" id="exampleInputOData1" aria-describedby="ODataHelp"></textarea>
 									<div id="ODataHelp" class="form-text">We will transmit your OData definition to our API backend, but we will never store your OData Definition.</div>
 									<br/>
 								</div>
 								<button type="button" onclick="getConversion()" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseOne" data-bs-target="#collapseThree" class="btn btn-primary">Convert to OpenAPI3</button>
-								<button type="button" onclick="getJSONConversion()" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseOne" data-bs-target="#collapseThree" class="btn btn-primary">Convert to OData-v4-JSON</button>
+								<button type="button" onclick="getJSONConversion()" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseOne" data-bs-target="#collapseThree" class="btn btn-primary">Convert to JSON schema</button>
 							</div>
 						</div>
 					</div>
@@ -188,8 +189,9 @@
 		</div>
 		<footer class="footer mt-auto py-3 bg-light">
 			<div class="container">
-			<span class="text-muted">App is based upon <a href="https://github.com/oasis-tcs/OData-openapi">OASIS OData to OpenAPI converter tools</a> and provided as is. Please have a look at our <a href="https://github.com/MartinPankraz/odata-openapi/">open-source project</a> for further details.</span>
-			<span class="text-muted">Post feedback and Issues on our <a href="https://github.com/MartinPankraz/odata-openapi/issues/new/choose">GitHub repos.</a></span>
+			<span class="text-muted">App is based upon <a href="https://github.com/oasis-tcs/OData-openapi">OASIS OData to OpenAPI converter tools</a> and provided as is.</span>
+			<br>
+			<span class="text-muted">Post feedback and Issues here <a href="https://github.com/MartinPankraz/odata-openapi/issues/new/choose" aria-label="github" target="_blank" rel="noopener"> <i class="fab fa-github"></i></a></span>
 			</div>
 		</footer>
 	</div>
@@ -221,6 +223,29 @@
 				console.log(err);
 				toastError();
 			}
+		}
+
+		async function importMetadata(){
+			var url = "https://" + document.getElementById('basic-url').value;
+			fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/xml;charset=utf-8'
+                },
+                mode: 'cors' // Add CORS mode
+            })
+            .then(response => {
+                if(response){
+                    document.getElementById('exampleInputOData1').value = response
+					console.log('OData metadata loaded!');
+                }else{
+					document.getElementById('exampleInputOData1').value = "Could not load OData metadata (XML)! Verify CORS issues and accessability! ";
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                toastError();
+            });
 		}
 
 		async function getConversion()
