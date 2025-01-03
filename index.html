@@ -11,6 +11,8 @@
 		<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" integrity="sha512-Qlv6VSKh1gDKGoJbnyA5RMXYcvnpIqhO++MhIM2fStMcGT9i2T//tSwYFlcyoRRDcDZ+TYHpH8azBBCyhpSeqw==" crossorigin="anonymous"></script>
 		<script src="https://cdn.jsdelivr.net/npm/api-spec-converter@2.12.0/dist/api-spec-converter.min.js" crossorigin="anonymous"></script>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.css">
+	    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/cobalt.min.css">
 	</head>
 	<body>
 	<h1 class="display-4 ms-1">OData Transformer 🦋</h1>
@@ -127,7 +129,7 @@
 							<div class="accordion-body">
 								<div class="mb-3">
 									<label for="exampleoutput1" class="form-label">Converted Result</label>
-									<textarea class="form-control" id="exampleoutput1" rows="15" style="height:100%;"></textarea>
+									<textarea id="exampleoutput1" rows="15" style="height:100%;"></textarea>
 								</div>
 								<button type="button" onclick="copyToClipboard()" class="btn btn-primary">Copy to clipboard</button>
 								<button type="button" onclick="download()" class="btn btn-success">
@@ -195,9 +197,27 @@
 			</div>
 		</footer>
 	</div>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/xml/xml.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/javascript/javascript.min.js"></script>
 	<script type="text/javascript">
 
 		const serializer = new XMLSerializer();
+
+		// Initialize CodeMirror on the odata metadata textarea
+        var editor = CodeMirror.fromTextArea(document.getElementById('exampleInputOData1'), {
+            mode: 'application/xml',
+            theme: 'cobalt',
+            lineNumbers: true,
+			viewportMargin: Infinity // Ensure all lines are rendered
+        });
+
+		// Initialize CodeMirror on the OpenAPI output textarea
+		var jsonEditor = CodeMirror.fromTextArea(document.getElementById('exampleoutput1'), {
+			mode: 'application/json',
+			theme: 'cobalt',
+			lineNumbers: true
+		});
 
 		async function transform(xslUrl, contentText, params) {
 			try {
@@ -235,15 +255,18 @@
                 mode: 'cors' // Add CORS mode
             })
             .then(response => {
-                if(response){
-                    document.getElementById('exampleInputOData1').value = response
-					console.log('OData metadata loaded!');
+                if(response && response.ok == true){
+					//get xml text from body and set it to the textarea
+					response.text().then(function(text) {
+						editor.setValue(text);
+						console.log('OData metadata loaded!');
+					});
                 }else{
-					document.getElementById('exampleInputOData1').value = "Could not load OData metadata (XML)! Verify CORS issues and accessability! ";
+					editor.setValue("<StatusCode>"+response.status + ", " + response.statusText +"</StatusCode><error>Could not load OData metadata (XML)! Verify CORS issues and accessability!</error>");
                 }
             })
             .catch((error) => {
-                console.error('Error:', error);
+				console.error('Error:', error);
                 toastError();
             });
 		}
@@ -252,7 +275,9 @@
 		{
 			try {
 				var domParser = new DOMParser();
-				var XMLDocument = domParser.parseFromString(document.getElementById('exampleInputOData1').value, "text/xml");
+				//var XMLDocument = domParser.parseFromString(document.getElementById('exampleInputOData1').value, "text/xml");
+				var xml = editor.getValue();
+				var XMLDocument = domParser.parseFromString(xml, "text/xml");
 				var xmlRootVersionValue = XMLDocument.getElementsByTagName("edmx:Edmx")[0].getAttribute("Version");
 				var dataServicesMaxVersionValue = XMLDocument.getElementsByTagName("edmx:DataServices")[0].getAttribute("m:MaxDataServiceVersion");
 				var dataServicesVersionValue = XMLDocument.getElementsByTagName("edmx:DataServices")[0].getAttribute("m:DataServiceVersion");
@@ -283,10 +308,10 @@
 
 				//transform OData XML definition to OpenAPI definition
 				var v4OutDoc = null;
-				var v4OutString = document.getElementById('exampleInputOData1').value;
+				var v4OutString = xml;
 				//if v2, transform to v4 first
 				if(odataVersionValue == "2.0"){
-					v4OutDoc = await(transform(basePath2OasisXSLToolsRelative + "V2-to-V4-CSDL.xsl", document.getElementById('exampleInputOData1').value));
+					v4OutDoc = await(transform(basePath2OasisXSLToolsRelative + "V2-to-V4-CSDL.xsl", xml));
 					v4OutString = serializer.serializeToString(v4OutDoc);
 				}
 				var openApiOutDoc = await(transform(basePath2OasisXSLToolsRelative + "V4-CSDL-to-OpenAPI.xsl", v4OutString,xslParams));
@@ -297,7 +322,8 @@
 				//feature flag post-processing
 				var postProcessedContent = await(doFeatureFlagProcessing(openApiParsed));
 
-				document.getElementById('exampleoutput1').value = postProcessedContent;
+				//document.getElementById('exampleoutput1').value = postProcessedContent;
+				jsonEditor.setValue(postProcessedContent);
 				console.log("Transformation completed.");
 				
 			} catch(err) {
@@ -577,7 +603,8 @@
 		{
 			try{
 				var domParser = new DOMParser();
-				var XMLDocument = domParser.parseFromString(document.getElementById('exampleInputOData1').value, "text/xml");
+				var xml = editor.getValue();
+				var XMLDocument = domParser.parseFromString(xml, "text/xml");
 				var xmlRootVersionValue = XMLDocument.getElementsByTagName("edmx:Edmx")[0].getAttribute("Version");
 				var dataServicesMaxVersionValue = XMLDocument.getElementsByTagName("edmx:DataServices")[0].getAttribute("m:MaxDataServiceVersion");
 				var dataServicesVersionValue = XMLDocument.getElementsByTagName("edmx:DataServices")[0].getAttribute("m:DataServiceVersion");
@@ -595,10 +622,10 @@
 
 				//transform OData XML definition to OpenAPI definition
 				var v4OutDoc = null;
-				var v4OutString = document.getElementById('exampleInputOData1').value;
+				var v4OutString = xml;
 				//if v2, transform to v4 first
 				if(odataVersionValue == "2.0"){
-					v4OutDoc = await(transform("https://raw.githubusercontent.com/oasis-tcs/odata-openapi/refs/heads/main/tools/V2-to-V4-CSDL.xsl", document.getElementById('exampleInputOData1').value));
+					v4OutDoc = await(transform("https://raw.githubusercontent.com/oasis-tcs/odata-openapi/refs/heads/main/tools/V2-to-V4-CSDL.xsl", xml));
 					v4OutString = serializer.serializeToString(v4OutDoc);
 				}
 				var openApiOutDoc = await(transform("https://raw.githubusercontent.com/oasis-tcs/odata-json-schema/refs/heads/main/tools/V4-CSDL-to-JSONSchema.xsl", v4OutString));
@@ -606,39 +633,33 @@
 				var codeContent = openApiOutDoc.childNodes[1].childNodes[3].childNodes[1].childNodes[0].textContent;
 				var openApiParsed = JSON.parse(codeContent);
 				
-				document.getElementById('exampleoutput1').value = JSON.stringify(openApiParsed, null, 4);;
+				//document.getElementById('exampleoutput1').value = JSON.stringify(openApiParsed, null, 4);
+				jsonEditor.setValue(JSON.stringify(openApiParsed, null, 4));
 				console.log("Transformation completed.");
 			} catch(err) {
-				console.log(err);
 				toastError();
+				console.log(err);
 			}
 		}
 
-		/*function importMetadata(){
-			const options = {
-				method: 'GET',
-				mode: 'no-cors',
-				headers: {
-					'Content-Type': 'application/xml;charset=utf-8'
-				}
-			}
-			fetch("https://" + document.getElementById('basic-url').value, options)
-				.then(res => res.text())
-				.then(function(response){
-					document.getElementById('exampleInputOData1').value = response
-				});
-		}*/
-
 		function copyToClipboard() {
-			var copyText = document.getElementById("exampleoutput1");
+			/*var copyText = document.getElementById("exampleoutput1");
 			copyText.select();
-			document.execCommand("copy");
-			toast();
+			document.execCommand("copy");*/
+			var code = jsonEditor.getValue();
+			navigator.clipboard.writeText(code).then(function() {
+				toast();
+			}, function(err) {
+				toastError();
+				console.error("Could not copy text: ", err);
+			});
+			
 		}
 
 		function download(){
 			toastDownload();
-			var text = document.getElementById("exampleoutput1").value;
+			//var text = document.getElementById("exampleoutput1").value;
+			var text = jsonEditor.getValue();
 			text = text.replace(/\n/g, "\r\n"); // To retain the Line breaks.
 			var myBlob = new Blob([text], { type: "application/json"});
 			saveAs(myBlob, "openapi-spec.json");
