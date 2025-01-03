@@ -43,7 +43,7 @@
 									<br/>
 								</div>
 								<button type="button" onclick="getConversion()" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseOne" data-bs-target="#collapseThree" class="btn btn-primary">Convert to OpenAPI3</button>
-								<button type="button" onclick="getJSONConversion()" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseOne" data-bs-target="#collapseThree" class="btn btn-primary" disabled>Convert to OData-v4-JSON</button>
+								<button type="button" onclick="getJSONConversion()" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseOne" data-bs-target="#collapseThree" class="btn btn-primary">Convert to OData-v4-JSON</button>
 							</div>
 						</div>
 					</div>
@@ -548,36 +548,45 @@
 			return converted;
 }
 				/* Transform OData XML definition to JSON definition as per OData v.4 spec https://github.com/oasis-tcs/odata-json-schema/tree/main/tools */
-		function getJSONConversion()
+		async function getJSONConversion()
 		{
-			var domParser = new DOMParser();
-			var XMLDocument = domParser.parseFromString(document.getElementById('exampleInputOData1').value, "text/xml");
-			var xmlRootVersionValue = XMLDocument.getElementsByTagName("edmx:Edmx")[0].getAttribute("Version");
-			var dataServicesMaxVersionValue = XMLDocument.getElementsByTagName("edmx:DataServices")[0].getAttribute("m:MaxDataServiceVersion");
-			var dataServicesVersionValue = XMLDocument.getElementsByTagName("edmx:DataServices")[0].getAttribute("m:DataServiceVersion");
-			var odataVersionValue = dataServicesVersionValue;
+			try{
+				var domParser = new DOMParser();
+				var XMLDocument = domParser.parseFromString(document.getElementById('exampleInputOData1').value, "text/xml");
+				var xmlRootVersionValue = XMLDocument.getElementsByTagName("edmx:Edmx")[0].getAttribute("Version");
+				var dataServicesMaxVersionValue = XMLDocument.getElementsByTagName("edmx:DataServices")[0].getAttribute("m:MaxDataServiceVersion");
+				var dataServicesVersionValue = XMLDocument.getElementsByTagName("edmx:DataServices")[0].getAttribute("m:DataServiceVersion");
+				var odataVersionValue = dataServicesVersionValue;
 
-			//target nodejs based implementation for odata version 3+
-			if(dataServicesVersionValue == null && dataServicesMaxVersionValue == null){ //must be v4
-				odataVersionValue = xmlRootVersionValue;
-			}else if( dataServicesMaxVersionValue >= "3.0"){//must be v3
-				odataVersionValue = dataServicesMaxVersionValue
-			}else if( dataServicesVersionValue >= "3.0"){//must be v3
-				odataVersionValue = dataServicesVersionValue;
-			}
-			toastOData(odataVersionValue);
-			
-			/*var options = {
-				method: 'POST',
-				body: document.getElementById('exampleInputOData1').value,
-				headers: {
-					'Content-Type': 'application/json',
-					'x-scheme': document.getElementById('exampleinputscheme1').value,
-					'x-basepath': document.getElementById('exampleinputbasepath1').value,
-					'x-host': document.getElementById('exampleinputhost1').value,
-					'x-odata-as-json': true
+				//target nodejs based implementation for odata version 3+
+				if(dataServicesVersionValue == null && dataServicesMaxVersionValue == null){ //must be v4
+					odataVersionValue = xmlRootVersionValue;
+				}else if( dataServicesMaxVersionValue >= "3.0"){//must be v3
+					odataVersionValue = dataServicesMaxVersionValue
+				}else if( dataServicesVersionValue >= "3.0"){//must be v3
+					odataVersionValue = dataServicesVersionValue;
 				}
-			}*/
+				toastOData(odataVersionValue);
+
+				//transform OData XML definition to OpenAPI definition
+				var v4OutDoc = null;
+				var v4OutString = document.getElementById('exampleInputOData1').value;
+				//if v2, transform to v4 first
+				if(odataVersionValue == "2.0"){
+					v4OutDoc = await(transform("https://raw.githubusercontent.com/oasis-tcs/odata-openapi/refs/heads/main/tools/V2-to-V4-CSDL.xsl", document.getElementById('exampleInputOData1').value));
+					v4OutString = serializer.serializeToString(v4OutDoc);
+				}
+				var openApiOutDoc = await(transform("https://raw.githubusercontent.com/oasis-tcs/odata-json-schema/refs/heads/main/tools/V4-CSDL-to-JSONSchema.xsl", v4OutString));
+				//get generated OpenAPI JSON from XML document
+				var codeContent = openApiOutDoc.childNodes[1].childNodes[3].childNodes[1].childNodes[0].textContent;
+				var openApiParsed = JSON.parse(codeContent);
+				
+				document.getElementById('exampleoutput1').value = JSON.stringify(openApiParsed, null, 4);;
+				console.log("Transformation completed.");
+			} catch(err) {
+				console.log(err);
+				toastError();
+			}
 		}
 
 		/*function importMetadata(){
