@@ -378,6 +378,16 @@
 					}
 				}
 			}
+			// Deduplicate tags by name
+			if (Array.isArray(openApiParsed.tags)) {
+				const seen = new Set();
+				openApiParsed.tags = openApiParsed.tags.filter(tag => {
+					if (!tag || !tag.name) return false;
+					if (seen.has(tag.name)) return false;
+					seen.add(tag.name);
+					return true;
+				});
+			}
 			//make sure tags have a description
 			if(tagsEnrichEnabled){
 				for (var tags in openApiParsed.tags) {
@@ -385,6 +395,7 @@
 					tag.description = tag.description || tag.name;
 				}
 			}
+			
 			//truncate description to a max of 1000 characters
 			if(flexSwitchTruncateEnabled){
 				openApiParsed.info.description = openApiParsed.info.description.substring(0, 1000);
