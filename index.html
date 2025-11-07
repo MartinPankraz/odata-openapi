@@ -310,7 +310,7 @@
 				var v4OutDoc = null;
 				var v4OutString = xml;
 				//if v2, transform to v4 first
-				if(odataVersionValue == "2.0"){
+				if(odataVersionValue == "2.0" || odataVersionValue == "3.0"){
 					v4OutDoc = await(transform(basePath2OasisXSLToolsRelative + "V2-to-V4-CSDL.xsl", xml));
 					v4OutString = serializer.serializeToString(v4OutDoc);
 				}
